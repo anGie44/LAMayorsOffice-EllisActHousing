@@ -11,6 +11,7 @@ ellis = df %>% # get ellis act properties
 
 res = df %>% # get rows where there are permits for new apartments or houses
   filter(Permit.Sub.Type=='Apartment' | Permit.Sub.Type=='1 or 2 Family Dwelling')
+# we flag family dwellings, but many of these are likely homes where the purchasers kicked out renters and moved in
 
 res_check = merge(ellis, res, by='Property.ID', all.x=T)# merge
 
@@ -22,7 +23,7 @@ res_check = res_check %>% # check which ones are violating the five year window
   mutate(permit_date = as.Date(Status.Date.y, format='%m/%d/%y')) %>%
   mutate(deadline = ellis_date+(5*365.25)) %>%
   mutate(past_deadline = ifelse(deadline<Sys.Date(), 'no', 'yes')) %>%
-  mutate(years = (permit_date-ellis_date)/365.25) %>%
+  mutate(years = (permit_date-ellis_date)/365.25) %>% # time between Ellis and permit application
   mutate(violation = ifelse((years>-1 & years<5),1,0)) %>% # potential violations id'd by permits filed 1 year before or 5 years after withdrawal
   mutate(prop_dup = duplicated(Property.ID)) %>%
   mutate(date_dup = duplicated(Status.Date.y)) %>%
