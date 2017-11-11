@@ -1,4 +1,5 @@
 ## Ben Fisher bensfisher@gmail.com ##
+# if you run into an error, it may be do to different date formats in the spreadsheet, which you can account for in lines 24 and 25
 setwd('~/LAMayorsOffice-EllisActHousing/')
 library(dplyr)
 
@@ -19,10 +20,10 @@ res_check = res_check %>% # check which ones are violating the five year window
   filter(Status=='CofO Issued' | Status=='CofO Corrected' | Status=='CofO in Progress'
          | Status=='TCO Issued' | Status=='TCO Renewed' | Status=='Permit Expired' |
            Status=='CofO Superseded' | Status=='Insp Scheduled') %>%
-  mutate(ellis_date = as.Date(Status.Date.x, format='%m/%d/%y')) %>%
-  mutate(permit_date = as.Date(Status.Date.y, format='%m/%d/%y')) %>%
+  mutate(ellis_date = as.Date(Status.Date.x, format='%m/%d/%y')) %>% # IF YOU HAVE AN ERROR YOU MAY NEED TO CHANGE THE DATE FORMAT
+  mutate(permit_date = as.Date(Status.Date.y, format='%m/%d/%y')) %>% # "
   mutate(deadline = ellis_date+(5*365.25)) %>%
-  mutate(past_deadline = ifelse(deadline<Sys.Date(), 'no', 'yes')) %>%
+  mutate(past_deadline = ifelse(deadline<Sys.Date(), 'yes', 'no')) %>%
   mutate(years = (permit_date-ellis_date)/365.25) %>% # time between Ellis and permit application
   mutate(violation = ifelse((years>-1 & years<5),1,0)) %>% # potential violations id'd by permits filed 1 year before or 5 years after withdrawal
   mutate(prop_dup = duplicated(Property.ID)) %>%
@@ -37,4 +38,4 @@ names(res_check) = c('Property.ID', 'Address.Full', 'Zip.Code', 'ellis_date', 'p
                  'Permit.Type', 'Permit.Sub.Type', 'Work.Description', 'years', 'deadline', 
                  'past_deadline')
 
-write.csv(res_check, 'potential_violations.csv', row.names=F)
+write.csv(res_check, 'violations/potential_violations.csv', row.names=F)
