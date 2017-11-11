@@ -32,8 +32,8 @@ res_check = res_check %>% # clean up to write to csv
   filter(violation==1) %>% # get violations only
   select(Property.ID, Address.Full.x, Zip.Code.x, ellis_date, permit_date,
          Permit.Type, Permit.Sub.Type, Work.Description, years, deadline, past_deadline)
-names(check) = c('Property.ID', 'Address.Full', 'Zip.Code', 'ellis_date', 'permit_date',
+names(res_check) = c('Property.ID', 'Address.Full', 'Zip.Code', 'ellis_date', 'permit_date',
                  'Permit.Type', 'Permit.Sub.Type', 'Work.Description', 'years', 'deadline', 
                  'past_deadline')
 
-write.csv(check, 'potential_violations.csv', row.names=F)
+write.csv(res_check, 'potential_violations.csv', row.names=F)
