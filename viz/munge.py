@@ -1,9 +1,5 @@
 import pandas as pd
 
-# Data should be in GDrive:
-# https://drive.google.com/drive/u/1/folders/19G1J7oLanTaCZW-_3QU6AIFS3Yj6bpxN
-# unzip Geodata_anela.zip and read the README
-
 # geos came from uploading the addresses to http://lahub.maps.arcgis.com/
 # http://lahub.maps.arcgis.com/home/item.html?id=0dac8f8c097b4418bb5b1f81f16e40d6
 # use ALL properties to max. likelihood of match, not uniques.
@@ -24,7 +20,7 @@ withdraw_geo = with_geo[with_geo['General Category'] == 'Ellis Withdrawal']
 violation_df = withdraw_geo.merge(pd.DataFrame(potential_violations['Property ID']), on='Property ID')
 violation_df['General Category'] = 'Potential Violation'
 
-with_violation = pd.concat([fix_zip, violation_df])
+with_violation = pd.concat([with_geo, violation_df])
 with_violation.to_csv('with_geo_violation.csv', index=False)
 
 # Add RSO as a column
