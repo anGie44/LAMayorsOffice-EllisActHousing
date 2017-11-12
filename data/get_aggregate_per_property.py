@@ -99,8 +99,7 @@ for cat in gc:
     df_output = df_output.join(temp, how='left').fillna("NAN")
 # concat address
 df_output = df_output.join(pd.DataFrame(
-              agg_address_description(merged_la_housing, idx, 'Address Full', sep=',')), how='left').fillna(0)
-# concat work description
+              agg_address_description(merged_la_housing, idx, 'Address Full', sep=',')), how='left').fillna("NAN")
 
 df_output = df_output.reset_index()
 df_output['WasWithdrawn'] = df_output['WasWithdrawn'] > 0
