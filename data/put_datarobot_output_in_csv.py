@@ -14,9 +14,11 @@ OUTPUT_FILE = os.path.join(DATA_PATH, "Early_Warning_List.csv")
 df_housing = pd.read_csv(INPUT_PROPERTIES_FILE, encoding='latin-1')
 df_warning = pd.read_csv(INPUT_WARNING_FILE, encoding='latin-1', dtype=str)
 
+# Set dtypes for index variable
 df_warning['Property ID'] = df_warning['Property ID'].astype(str)
 df_housing['Property ID'] = df_housing['Property ID'].astype(str)
 
+# merge address data with prediction data
 df_housing_prediction = (
     df_housing[['Property ID', 'APN', 'Address Full', 'Zip Code']].
     set_index('Property ID').
@@ -26,9 +28,11 @@ df_housing_prediction = (
     )
 )
 
+# Turn prediction into a 0-100 threat level
 df_housing_prediction['Withdrawal Threat Level'] = np.round(100 * df_housing_prediction['Prediction'].astype(float)).astype(int)
 df_housing_prediction = df_housing_prediction.drop('Prediction', 1)
 
+# Outputting format
 df_housing_prediction = (
     df_housing_prediction.
     reset_index('Property ID').
