@@ -1,8 +1,26 @@
 import os
 import pandas as pd
 
+def dump_counts(df, idx, col):
+    dump_grouped = df.groupby([idx, col]).size()\
+      .unstack().fillna(0)\
+      .reset_index()\
+      #.to_csv(os.path.join(filepath, '{}.csv'.format(col).replace(" ", "_")), index=False)
+    return dump_grouped
 
+def agg_work_description(df, idx, text_col, category, sep=" ",):
+    df[text_col] = df[text_col].fillna("")
+    agg_work_description = df[df['General Category'] == category].groupby([idx])[text_col]\
+                             .apply(list)\
+                             .apply(lambda x: sep.join(x))
+    return agg_work_description
 
+def agg_address_description(df, idx, text_col, sep=","):
+    df[text_col] = df[text_col] .fillna(" ")
+    agg_address_description = df.groupby([idx])[text_col]\
+                             .apply(list)\
+                             .apply(lambda x: sep.join(x))
+    return agg_address_description
 #
 # Set the input/output file names to the right targets
 #
@@ -37,7 +55,7 @@ merged_la_housing = pd.concat([la_housing, min_ellis_date], axis=1)
 
 # Drop stuff that occured after a withdrawal
 merged_la_housing = merged_la_housing.loc[
-    pd.isnull(merged_la_housing['Withdrawal Date']) | 
+    pd.isnull(merged_la_housing['Withdrawal Date']) |
     (merged_la_housing['Withdrawal Date'] > merged_la_housing['Status Date'])
 ]
 
@@ -48,7 +66,7 @@ merged_la_housing = merged_la_housing[merged_la_housing['Property ID'].isin(ever
 merged_la_housing['WasWithdrawn'] = ~pd.isnull(merged_la_housing['Withdrawal Date'])
 
 
-# 
+#
 # Add columns here that are 1 for a feature of interest, 0 elsewhere. Then add them to the 'output columns' list.
 #
 
@@ -63,7 +81,26 @@ output_columns = [
     'WasWithdrawn'
 ]
 
+
 df_output = merged_la_housing.groupby('Property ID')[output_columns].sum()
+cat_col = ['Permit Type','Permit Sub-Type']
+idx = 'Property ID'
+text_col = 'Work Description'
+
+for col in cat_col:
+    dump_grouped = dump_counts(merged_la_housing, idx, col)
+    df_output = df_output.join(dump_grouped.set_index(idx), how='left').fillna(0)
+
+# concat work description
+gc = ['Entitlement Change', 'Building Permits','Demolition Permits']
+for cat in gc:
+    temp = pd.DataFrame(agg_work_description(merged_la_housing, idx, text_col, cat))
+    temp.columns = [cat+ "_"+text_col]
+    df_output = df_output.join(temp, how='left').fillna("NAN")
+# concat address
+df_output = df_output.join(pd.DataFrame(
+              agg_address_description(merged_la_housing, idx, 'Address Full', sep=',')), how='left').fillna("NAN")
+
 df_output = df_output.reset_index()
 df_output['WasWithdrawn'] = df_output['WasWithdrawn'] > 0
 df_output.to_csv(OUTPUT_FILE, index=False)
